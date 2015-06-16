@@ -2,6 +2,7 @@ from PIL import Image
 import multiprocessing
 import math
 import sys
+import random
 
 sequence_function = lambda z_n, c : z_n ** 2 + c
 
@@ -90,15 +91,19 @@ def find_black_pixels(image):
     return list(black_pixels)
 
 def slice_entry_image(width, height, min_iter, max_iter, cpu_number,
-                      slice_per_cpu, complex_number_by_pixel, image):
+                      slice_per_cpu, complex_number_by_pixel, image,
+                      sample_percent):
     """This function compute the list of argument tuples that will be used
     to call iterate_over_region. It computes the list of black pixels
     of the input image, slice this list according to its arguments and
     then build the list of argument tuples.
 
     """
-    black_pixels = find_black_pixels(image)
-    print len(black_pixels), "black pixels found on the input image."
+    black_pixels_full = find_black_pixels(image)
+    print len(black_pixels_full), "black pixels found on the input image."
+    sample_size = int((sample_percent * len(black_pixels_full)) / 100.)
+    black_pixels = random.sample(black_pixels_full, sample_size)
+    print len(black_pixels), "black pixels selected"
     slice_size = len(black_pixels) / (cpu_number * slice_per_cpu)
     argument_list = []
 
@@ -140,7 +145,9 @@ def iterate_over_screen(width, height, min_iter, max_iter,
     sliced_image = slice_entry_image(width, height, min_iter,
                                      max_iter, cpu_number,
                                      slice_per_cpu,
-                                     complex_number_by_pixel, image)
+                                     complex_number_by_pixel, image,
+                                     sample_percent)
+
     print "Launching computation on", cpu_number, "cores"
     print "The image is decomposed in", len(sliced_image), "sections"
     process_pool = multiprocessing.Pool(cpu_number)
@@ -174,7 +181,7 @@ def render_picture(width, height, result):
     img = Image.new('RGB', (width, height))
     img.putdata([(((result[x][y] - minimum) * 255) / (maximum-minimum), 0, 0) \
                  for y in range(height) for x in range(width)])
-    img.save('test_bulb_zone.bmp')
+    img.save('test_bulb_zone_sample.bmp')
     print "Rendering done"
 
 if __name__ == '__main__':
@@ -183,8 +190,8 @@ if __name__ == '__main__':
     height = 400
     # The minimal number of iterations is used to remove the noise in
     # the picture.
-    min_iter = 20
-    max_iter = 200
+    min_iter = 900
+    max_iter = 9000
     # In order to speed up the computation, we use more slices than
     # the number of cpu. This allows the program to begin new
     # calculation if a slice takes a long time. The memory used by the
@@ -195,7 +202,7 @@ if __name__ == '__main__':
     # this is size of the square shape of complex number.
     complex_number_by_pixel = 4
     # Percent of the pixel that will be used to generate the fractal.
-    random_sample_percent = 20
+    random_sample_percent = 30
 
     print "Start"
     print "Opening image file"
