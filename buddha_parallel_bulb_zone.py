@@ -138,6 +138,20 @@ def render_picture(width, height, result):
     img.save('test_bulb.bmp')
     print "Rendering done"
 
+def find_black_pixels(image):
+    """This function returns the list of the black pixels of a given
+    image.
+
+    """
+    black_pixels = set()
+
+    for x in image.size[0]:
+        for y in image.size[1]:
+            if image.getpixel((x, y)) == 0:
+                black_pixels.add((x, y))
+
+    return list(black_pixels)
+
 if __name__ == '__main__':
     # Height should be (2/3) * width.
     width = 300
