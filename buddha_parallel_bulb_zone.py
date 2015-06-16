@@ -61,22 +61,37 @@ def iterate_over_region(args):
     print "Computation for x in [", min_x, ",", max_x, "] DONE"
     return complex_plane
 
-def slice_screen(width, height, min_iter, max_iter, cpu_number,
-                 slice_per_cpu):
-    """We cut the screen in cpu_number slices of width (width /
-    cpu_number). If the number of cpu does not divide the width, the
-    last slices will contain the remaining pixels
+def find_black_pixels(image):
+    """This function returns the list of the black pixels of a given
+    image.
 
     """
-    screen_sections = []
-    slice_size = width / (cpu_number * slice_per_cpu)
+    black_pixels = set()
+
+    for x in image.size[0]:
+        for y in image.size[1]:
+            if image.getpixel((x, y)) == 0:
+                black_pixels.add((x, y))
+
+    return list(black_pixels)
+
+def slice_entry_image(width, height, min_iter, max_iter, cpu_number,
+                      slice_per_cpu, image):
+    """This function compute the list of argument tuples that will be used
+    to call iterate_over_region. It computes the list of black pixels
+    of the input image, slice this list according to its arguments and
+    then build the list of argument tuples.
+
+    """
+    black_pixels = find_black_pixels(image)
+    slice_size = len(black_pixels) / (cpu_number * slice_per_cpu)
+    argument_list = []
 
     for i in range((cpu_number * slice_per_cpu) - 1):
-        screen_sections.append((width, height, min_iter, max_iter, i *
-                                slice_size, (i + 1) * slice_size, 0, height))
-    screen_sections.append((width, height, min_iter, max_iter, i *
-                            slice_size, width, 0, height))
-    return screen_sections
+        slice = black_pixels[i * slice_size:(i + 1) * slice_size]
+        argument_list.append((width, height, min_iter, max_iter, slice))
+
+    return argument_list
 
 def fusion_results(width, height, results):
     """After the computation, we have to add the results of every
@@ -92,7 +107,7 @@ def fusion_results(width, height, results):
     return final_result
 
 def iterate_over_screen(width, height, min_iter, max_iter,
-                        slice_per_cpu):
+                        slice_per_cpu, image):
     """This function uses the other functions to : create the process
     pool, compute the size of the different slices of the screen, use
     Pool.map to compute the orbits of the different complexe sequences
@@ -101,11 +116,11 @@ def iterate_over_screen(width, height, min_iter, max_iter,
     """
     cpu_number = multiprocessing.cpu_count()
     print "Launching computation on", cpu_number, "cores"
-    sliced_screen = slice_screen(width, height, min_iter, max_iter,
-                                 cpu_number, slice_per_cpu)
+    sliced_image = slice_entry_image(width, height, min_iter,
+                                     max_iter, cpu_number, slice_per_cpu, image)
     print "The screen is decomposed in", len(sliced_screen), "sections"
     process_pool = multiprocessing.Pool(cpu_number)
-    res = process_pool.map(iterate_over_region, sliced_screen)
+    res = process_pool.map(iterate_over_region, sliced_image)
     process_pool.close()
     process_pool.join()
     final_result = fusion_results(width, height, res)
@@ -138,20 +153,6 @@ def render_picture(width, height, result):
     img.save('test_bulb.bmp')
     print "Rendering done"
 
-def find_black_pixels(image):
-    """This function returns the list of the black pixels of a given
-    image.
-
-    """
-    black_pixels = set()
-
-    for x in image.size[0]:
-        for y in image.size[1]:
-            if image.getpixel((x, y)) == 0:
-                black_pixels.add((x, y))
-
-    return list(black_pixels)
-
 if __name__ == '__main__':
     # Height should be (2/3) * width.
     width = 300
@@ -166,7 +167,11 @@ if __name__ == '__main__':
     # program is linear in this variable, be careful.
     slice_per_cpu = 5
 
-    print "start"
-    res = iterate_over_screen(width, height, min_iter, max_iter, slice_per_cpu)
+    print "Start"
+    print "Opening image file"
+    filename = sys.argv[1]
+    image = Image.open(filename)
+    print "Image opened"
+    res = iterate_over_screen(width, height, min_iter, max_iter, slice_per_cpu, image)
     print "All computation done"
     render_picture_bis(width, height, res)
