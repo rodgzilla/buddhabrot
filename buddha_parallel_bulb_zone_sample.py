@@ -150,6 +150,8 @@ def iterate_over_screen(width, height, min_iter, max_iter,
 
     print "Launching computation on", cpu_number, "cores"
     print "The image is decomposed in", len(sliced_image), "sections"
+    print complex_number_by_pixel ** 2, \
+        "sequences will be computed for each pixel selected"
     process_pool = multiprocessing.Pool(cpu_number)
     res = process_pool.map(iterate_over_region, sliced_image)
     process_pool.close()
@@ -190,19 +192,19 @@ if __name__ == '__main__':
     height = 400
     # The minimal number of iterations is used to remove the noise in
     # the picture.
-    min_iter = 900
-    max_iter = 9000
+    min_iter = 100
+    max_iter = 1000
     # In order to speed up the computation, we use more slices than
     # the number of cpu. This allows the program to begin new
     # calculation if a slice takes a long time. The memory used by the
     # program is linear in this variable, be careful.
-    slice_per_cpu = 5
+    slice_per_cpu = 6
     # The number of complex number associated to each pixel of the
     # entry image on which the sequence will be iterated. Actually,
     # this is size of the square shape of complex number.
-    complex_number_by_pixel = 4
+    complex_number_by_pixel = 8
     # Percent of the pixel that will be used to generate the fractal.
-    random_sample_percent = 30
+    random_sample_percent = 50
 
     print "Start"
     print "Opening image file"
