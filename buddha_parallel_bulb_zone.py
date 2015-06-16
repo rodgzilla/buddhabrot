@@ -84,7 +84,7 @@ def find_black_pixels(image):
 
     for x in range(image.size[0]):
         for y in range(image.size[1]):
-            if image.getpixel((x, y)) == 0:
+            if image.getpixel((x, y)) == (0, 0, 0, 255):
                 black_pixels.add((x, y))
 
     return list(black_pixels)
@@ -98,6 +98,7 @@ def slice_entry_image(width, height, min_iter, max_iter, cpu_number,
 
     """
     black_pixels = find_black_pixels(image)
+    print len(black_pixels), "black pixels found on the input image."
     slice_size = len(black_pixels) / (cpu_number * slice_per_cpu)
     argument_list = []
 
@@ -139,7 +140,6 @@ def iterate_over_screen(width, height, min_iter, max_iter,
                                      max_iter, cpu_number,
                                      slice_per_cpu,
                                      complex_number_by_pixel, image)
-    print sliced_image[0][-1]
     print "Launching computation on", cpu_number, "cores"
     print "The image is decomposed in", len(sliced_image), "sections"
     process_pool = multiprocessing.Pool(cpu_number)
@@ -173,7 +173,7 @@ def render_picture(width, height, result):
     img = Image.new('RGB', (width, height))
     img.putdata([(((result[x][y] - minimum) * 255) / (maximum-minimum), 0, 0) \
                  for y in range(height) for x in range(width)])
-    img.save('test_bulb.bmp')
+    img.save('test_bulb_zone.bmp')
     print "Rendering done"
 
 if __name__ == '__main__':
@@ -182,17 +182,17 @@ if __name__ == '__main__':
     height = 400
     # The minimal number of iterations is used to remove the noise in
     # the picture.
-    min_iter = 300
-    max_iter = 3000
+    min_iter = 200
+    max_iter = 2000
     # In order to speed up the computation, we use more slices than
     # the number of cpu. This allows the program to begin new
     # calculation if a slice takes a long time. The memory used by the
     # program is linear in this variable, be careful.
-    slice_per_cpu = 5
+    slice_per_cpu = 8
     # The number of complex number associated to each pixel of the
     # entry image on which the sequence will be iterated. Actually,
     # this is size of the square shape of complex number.
-    complex_number_by_pixel = 4
+    complex_number_by_pixel = 6
 
     print "Start"
     print "Opening image file"
@@ -202,4 +202,4 @@ if __name__ == '__main__':
     res = iterate_over_screen(width, height, min_iter, max_iter,
                               slice_per_cpu, complex_number_by_pixel, image)
     print "All computation done"
-    render_picture_bis(width, height, res)
+    render_picture(width, height, res)
