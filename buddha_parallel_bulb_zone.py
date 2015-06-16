@@ -1,8 +1,16 @@
 from PIL import Image
 import multiprocessing
 import math
+import sys
 
 sequence_function = lambda z_n, c : z_n ** 2 + c
+
+def decompose_pixel_into_complex_numbers_list(x, y, complex_number_by_pixel):
+    """This function computes the complex_number_by_pixel ** 2 pixels
+    that corresponds to the (x, y) pixel in the complex plane.
+
+    """
+    return 5
 
 def is_in_cardoid_or_bulb(z):
     """Algorithm for the test:
@@ -15,14 +23,14 @@ def is_in_cardoid_or_bulb(z):
 
 # def iterate_over_region(width, height, min_x, max_x, min_y, max_y):
 def iterate_over_region(args):
-    """Compute the sequences on a given region. args is a 6-tuple composed
-    as follows (width, height, min_iter, max_iter, min_x, max_x,
-    min_y, max_y).  It returns a 2 dimensionnal array of size width *
-    height containing the number of occurences of a given pixel in the
-    complex sequences.
+    """Compute the sequences on a given region. args is a 5-tuple composed
+    as follows (width, height, min_iter, max_iter,
+    complex_number_by_pixel, slice). It returns a 2 dimensionnal array
+    of size width * height containing the number of occurences of a
+    given pixel in the complex sequences.
 
     """
-    width, height, min_iter, max_iter, min_x, max_x, min_y, max_y = args
+    width, height, min_iter, max_iter, complex_number_by_pixel, slice = args
     complex_plane = [[0] * height for _ in range(width)]
 
     # For each pixel of the screen:
@@ -68,15 +76,15 @@ def find_black_pixels(image):
     """
     black_pixels = set()
 
-    for x in image.size[0]:
-        for y in image.size[1]:
+    for x in range(image.size[0]):
+        for y in range(image.size[1]):
             if image.getpixel((x, y)) == 0:
                 black_pixels.add((x, y))
 
     return list(black_pixels)
 
 def slice_entry_image(width, height, min_iter, max_iter, cpu_number,
-                      slice_per_cpu, image):
+                      slice_per_cpu, complex_number_by_pixel, image):
     """This function compute the list of argument tuples that will be used
     to call iterate_over_region. It computes the list of black pixels
     of the input image, slice this list according to its arguments and
@@ -87,10 +95,16 @@ def slice_entry_image(width, height, min_iter, max_iter, cpu_number,
     slice_size = len(black_pixels) / (cpu_number * slice_per_cpu)
     argument_list = []
 
+    print "Beggining of the slicing of the entry image"
     for i in range((cpu_number * slice_per_cpu) - 1):
         slice = black_pixels[i * slice_size:(i + 1) * slice_size]
-        argument_list.append((width, height, min_iter, max_iter, slice))
+        argument_list.append((width, height, min_iter, max_iter,
+                              complex_number_by_pixel, slice))
+    final_slice = black_pixels[i * slice_size:]
+    argument_list.append((width, height, min_iter, max_iter,
+                          complex_number_by_pixel, final_slice))
 
+    print "Slicing done"
     return argument_list
 
 def fusion_results(width, height, results):
@@ -107,7 +121,7 @@ def fusion_results(width, height, results):
     return final_result
 
 def iterate_over_screen(width, height, min_iter, max_iter,
-                        slice_per_cpu, image):
+                        slice_per_cpu, complex_number_by_pixel, image):
     """This function uses the other functions to : create the process
     pool, compute the size of the different slices of the screen, use
     Pool.map to compute the orbits of the different complexe sequences
@@ -115,10 +129,13 @@ def iterate_over_screen(width, height, min_iter, max_iter,
 
     """
     cpu_number = multiprocessing.cpu_count()
-    print "Launching computation on", cpu_number, "cores"
     sliced_image = slice_entry_image(width, height, min_iter,
-                                     max_iter, cpu_number, slice_per_cpu, image)
-    print "The screen is decomposed in", len(sliced_screen), "sections"
+                                     max_iter, cpu_number,
+                                     slice_per_cpu,
+                                     complex_number_by_pixel, image)
+    print sliced_image[0][-1]
+    print "Launching computation on", cpu_number, "cores"
+    print "The image is decomposed in", len(sliced_image), "sections"
     process_pool = multiprocessing.Pool(cpu_number)
     res = process_pool.map(iterate_over_region, sliced_image)
     process_pool.close()
@@ -166,12 +183,17 @@ if __name__ == '__main__':
     # calculation if a slice takes a long time. The memory used by the
     # program is linear in this variable, be careful.
     slice_per_cpu = 5
+    # The number of complex number associated to each pixel of the
+    # entry image on which the sequence will be iterated. Actually,
+    # this is size of the square shape of complex number.
+    complex_number_by_pixel = 1
 
     print "Start"
     print "Opening image file"
     filename = sys.argv[1]
     image = Image.open(filename)
     print "Image opened"
-    res = iterate_over_screen(width, height, min_iter, max_iter, slice_per_cpu, image)
+    res = iterate_over_screen(width, height, min_iter, max_iter,
+                              slice_per_cpu, complex_number_by_pixel, image)
     print "All computation done"
     render_picture_bis(width, height, res)
