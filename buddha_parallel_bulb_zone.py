@@ -5,12 +5,19 @@ import sys
 
 sequence_function = lambda z_n, c : z_n ** 2 + c
 
-def decompose_pixel_into_complex_numbers_list(x, y, complex_number_by_pixel):
+def decompose_pixel_into_complex_numbers_list(width, height, x, y,
+                                              complex_number_by_pixel):
     """This function computes the complex_number_by_pixel ** 2 pixels
     that corresponds to the (x, y) pixel in the complex plane.
 
     """
-    return 5
+    for i in range(complex_number_by_pixel):
+        for j in range(complex_number_by_pixel):
+            real = (3. * complex_number_by_pixel * x + i) / \
+                   (complex_number_by_pixel * width) - 2
+            imag = (2. * complex_number_by_pixel * y + j) / \
+                   (complex_number_by_pixel * height) - 1
+            yield complex(real, imag)
 
 def is_in_cardoid_or_bulb(z):
     """Algorithm for the test:
@@ -33,13 +40,10 @@ def iterate_over_region(args):
     width, height, min_iter, max_iter, complex_number_by_pixel, slice = args
     complex_plane = [[0] * height for _ in range(width)]
 
-    # For each pixel of the screen:
-    for x in xrange(min_x, max_x):
-        for y in xrange(min_y, max_y):
-            # Compute the corresponding complex number.
-            c = complex(((x * 3.) / width) - 2, ((y * 2.0) / height) - 1)
-            # We check if p is in the cardoid or the bulb (which means
-            # that it automatically belongs to the mandelbrot set.
+    for x, y in slice:
+        for c in decompose_pixel_into_complex_numbers_list(width,
+                                                           height, x, y, 
+                                                           complex_number_by_pixel):
             if is_in_cardoid_or_bulb(c):
                 continue
             z = c
@@ -66,7 +70,9 @@ def iterate_over_region(args):
                             complex_plane[int(pixel_x)][int(pixel_y)] += 1
                     break
 
-    print "Computation for x in [", min_x, ",", max_x, "] DONE"
+    print "Computation from (" + str(slice[0][0]) + ', ' + \
+        str(slice[0][1]) + ') to (' + str(slice[-1][0]) + ', ' + \
+        str(slice[-1][1]) + ')'
     return complex_plane
 
 def find_black_pixels(image):
@@ -172,8 +178,8 @@ def render_picture(width, height, result):
 
 if __name__ == '__main__':
     # Height should be (2/3) * width.
-    width = 300
-    height = 200
+    width = 600
+    height = 400
     # The minimal number of iterations is used to remove the noise in
     # the picture.
     min_iter = 300
@@ -186,7 +192,7 @@ if __name__ == '__main__':
     # The number of complex number associated to each pixel of the
     # entry image on which the sequence will be iterated. Actually,
     # this is size of the square shape of complex number.
-    complex_number_by_pixel = 1
+    complex_number_by_pixel = 4
 
     print "Start"
     print "Opening image file"
