@@ -15,10 +15,10 @@ def is_in_cardoid_or_bulb(z):
 
 # def iterate_over_region(width, height, min_x, max_x, min_y, max_y):
 def iterate_over_region(args):
-    """Compute the sequences on a given region. args is a 6-tuple
-    composed as follows (width, height, min_x, max_x, min_y, max_y).
-    It returns a 2 dimensionnal array of size width * height
-    containing the number of occurences of a given pixel in the
+    """Compute the sequences on a given region. args is a 6-tuple composed
+    as follows (width, height, min_iter, max_iter, min_x, max_x,
+    min_y, max_y).  It returns a 2 dimensionnal array of size width *
+    height containing the number of occurences of a given pixel in the
     complex sequences.
 
     """
@@ -137,43 +137,6 @@ def render_picture(width, height, result):
                  for y in range(height) for x in range(width)])
     img.save('test_bulb.bmp')
     print "Rendering done"
-
-def render_picture_bis(width, height, result):
-    """This function renders the final picture and save it to
-    'test.bmp'. To render the picture, the function computes the
-    minimum and maximum values of the cells, the scale the range of
-    values to the interval [0, 255]. The final picture is rendered
-    using this value as a red component.
-
-    """
-    minimum = result[0][0]
-    maximum = result[0][0]
-
-    print "Starting rendering"
-    print "The image size is", width, "x", height
-    for x in range(width):
-        for y in range(height):
-            if result[x][y] < minimum:
-                minimum = result[x][y]
-            if result[x][y] > maximum:
-                maximum = result[x][y]
-
-    middle = (minimum + maximum) / 2.
-    datas = []
-    for y in range(height):
-        for x in range(width):
-            if result[x][y] < middle:
-                red_component = ((result[x][y] - minimum) * 255) / (middle-minimum)
-                datas.append((int(red_component), 0, 0))
-            else:
-                green_component = ((result[x][y] - middle) * 127) / (maximum-middle)
-                datas.append((0, int(green_component), 0))
-
-    img = Image.new('RGB', (width, height))
-    img.putdata(datas)
-    img.save('test_bulb.bmp')
-    print "Rendering done"
-
 
 if __name__ == '__main__':
     # Height should be (2/3) * width.
