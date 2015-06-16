@@ -128,7 +128,8 @@ def fusion_results(width, height, results):
     return final_result
 
 def iterate_over_screen(width, height, min_iter, max_iter,
-                        slice_per_cpu, complex_number_by_pixel, image):
+                        slice_per_cpu, complex_number_by_pixel, image,
+                        sample_percent):
     """This function uses the other functions to : create the process
     pool, compute the size of the different slices of the screen, use
     Pool.map to compute the orbits of the different complexe sequences
@@ -193,6 +194,8 @@ if __name__ == '__main__':
     # entry image on which the sequence will be iterated. Actually,
     # this is size of the square shape of complex number.
     complex_number_by_pixel = 4
+    # Percent of the pixel that will be used to generate the fractal.
+    random_sample_percent = 20
 
     print "Start"
     print "Opening image file"
@@ -200,6 +203,7 @@ if __name__ == '__main__':
     image = Image.open(filename)
     print "Image opened"
     res = iterate_over_screen(width, height, min_iter, max_iter,
-                              slice_per_cpu, complex_number_by_pixel, image)
+                              slice_per_cpu, complex_number_by_pixel,
+                              image, random_sample_percent)
     print "All computation done"
     render_picture(width, height, res)

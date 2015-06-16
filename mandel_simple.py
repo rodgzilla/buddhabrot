@@ -7,8 +7,8 @@ import cmath
 pygame.init()
 
 maxIter = 100
-width = 600
-height = 400
+width = 1800
+height = 1200
 
 def draw_mandel(window, sequence_function):
     x_ratio = 3. / width
