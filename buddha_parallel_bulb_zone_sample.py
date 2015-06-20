@@ -29,7 +29,6 @@ def is_in_cardoid_or_bulb(z):
     return z.real < p - 2 * (p ** 2) + 1. / 4 and \
         ((z.real + 1) ** 2) + (z.imag ** 2) < 1. / 16
 
-# def iterate_over_region(width, height, min_x, max_x, min_y, max_y):
 def iterate_over_region(args):
     """Compute the sequences on a given region. args is a 5-tuple composed
     as follows (width, height, min_iter, max_iter,
