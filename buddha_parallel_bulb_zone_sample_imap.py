@@ -70,9 +70,7 @@ def iterate_over_region(args):
                             complex_plane[int(pixel_x)][int(pixel_y)] += 1
                     break
 
-    print "Computation from (" + str(slice[0][0]) + ', ' + \
-        str(slice[0][1]) + ') to (' + str(slice[-1][0]) + ', ' + \
-        str(slice[-1][1]) + ')'
+    print "Zone computation finished"
     return complex_plane
 
 def find_black_pixels(image):
@@ -131,6 +129,17 @@ def fusion_results(width, height, results):
 
     return final_result
 
+def progressive_fusion(width, height, results_gen, result_number):
+    final_result = [[0] * height for _ in range(width)]
+    i = 1
+
+    for sub_result in results_gen:
+        final_result = fusion_results(width, height, (final_result, sub_result))
+        print "Fusion", i, "/", result_number, "done"
+        i += 1
+
+    return final_result
+
 def iterate_over_screen(width, height, min_iter, max_iter,
                         slice_per_cpu, complex_number_by_pixel, image,
                         sample_percent):
@@ -152,10 +161,11 @@ def iterate_over_screen(width, height, min_iter, max_iter,
     print complex_number_by_pixel ** 2, \
         "sequences will be computed for each pixel selected"
     process_pool = multiprocessing.Pool(cpu_number)
-    res = process_pool.map(iterate_over_region, sliced_image)
+    res = process_pool.imap(iterate_over_region, sliced_image)
+    final_result = progressive_fusion(width, height, res,
+                                      len(sliced_image))
     process_pool.close()
     process_pool.join()
-    final_result = fusion_results(width, height, res)
 
     return final_result
 
@@ -182,7 +192,7 @@ def render_picture(width, height, result):
     img = Image.new('RGB', (width, height))
     img.putdata([(((result[x][y] - minimum) * 255) / (maximum-minimum), 0, 0) \
                  for y in range(height) for x in range(width)])
-    img.save('test_bulb_zone_sample.bmp')
+    img.save('imap.bmp')
     print "Rendering done"
 
 if __name__ == '__main__':
@@ -191,17 +201,17 @@ if __name__ == '__main__':
     height = 600
     # The minimal number of iterations is used to remove the noise in
     # the picture.
-    min_iter = 100
-    max_iter = 1000
+    min_iter = 1000
+    max_iter = 10000
     # In order to speed up the computation, we use more slices than
     # the number of cpu. This allows the program to begin new
     # calculation if a slice takes a long time. The memory used by the
     # program is linear in this variable, be careful.
-    slice_per_cpu = 6
+    slice_per_cpu = 10
     # The number of complex number associated to each pixel of the
     # entry image on which the sequence will be iterated. Actually,
     # this is size of the square shape of complex number.
-    complex_number_by_pixel = 10
+    complex_number_by_pixel = 60
     # Percent of the pixel that will be used to generate the fractal.
     random_sample_percent = 15
 
