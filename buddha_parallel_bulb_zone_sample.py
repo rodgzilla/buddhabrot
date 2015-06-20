@@ -84,7 +84,7 @@ def find_black_pixels(image):
 
     for x in range(image.size[0]):
         for y in range(image.size[1]):
-            if image.getpixel((x, y)) == (0, 0, 0, 255):
+            if image.getpixel((x, y)) == (0, 0, 0):
                 black_pixels.add((x, y))
 
     return list(black_pixels)
@@ -187,12 +187,12 @@ def render_picture(width, height, result):
 
 if __name__ == '__main__':
     # Height should be (2/3) * width.
-    width = 600
-    height = 400
+    width = 1350
+    height = 900
     # The minimal number of iterations is used to remove the noise in
     # the picture.
-    min_iter = 100
-    max_iter = 1000
+    min_iter = 5000
+    max_iter = 50000
     # In order to speed up the computation, we use more slices than
     # the number of cpu. This allows the program to begin new
     # calculation if a slice takes a long time. The memory used by the
@@ -201,9 +201,9 @@ if __name__ == '__main__':
     # The number of complex number associated to each pixel of the
     # entry image on which the sequence will be iterated. Actually,
     # this is size of the square shape of complex number.
-    complex_number_by_pixel = 8
+    complex_number_by_pixel = 30
     # Percent of the pixel that will be used to generate the fractal.
-    random_sample_percent = 50
+    random_sample_percent = 15
 
     print "Start"
     print "Opening image file"
