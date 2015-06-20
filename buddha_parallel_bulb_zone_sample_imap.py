@@ -201,8 +201,8 @@ if __name__ == '__main__':
     height = 600
     # The minimal number of iterations is used to remove the noise in
     # the picture.
-    min_iter = 1000
-    max_iter = 10000
+    min_iter = 200
+    max_iter = 2000
     # In order to speed up the computation, we use more slices than
     # the number of cpu. This allows the program to begin new
     # calculation if a slice takes a long time. The memory used by the
@@ -211,9 +211,9 @@ if __name__ == '__main__':
     # The number of complex number associated to each pixel of the
     # entry image on which the sequence will be iterated. Actually,
     # this is size of the square shape of complex number.
-    complex_number_by_pixel = 60
+    complex_number_by_pixel = 40
     # Percent of the pixel that will be used to generate the fractal.
-    random_sample_percent = 15
+    random_sample_percent = 40
 
     print "Start"
     print "Opening image file"
