@@ -97,10 +97,10 @@ def slice_entry_image(width, height, min_iter, max_iter, cpu_number,
 
     """
     black_pixels_full = find_black_pixels(image)
-    print len(black_pixels_full), "black pixels found on the input image."
+    print len(black_pixels_full), "Black pixels found on the input image."
     sample_size = int((sample_percent * len(black_pixels_full)) / 100.)
     black_pixels = random.sample(black_pixels_full, sample_size)
-    print len(black_pixels), "black pixels selected"
+    print len(black_pixels), "Black pixels selected"
     slice_size = len(black_pixels) / (cpu_number * slice_per_cpu)
     argument_list = []
 
@@ -201,7 +201,8 @@ def render_picture(width, height, result):
                 color = (255, int(((value - ((2. * range_size) / 50))
                                  * 170.) / ((4. * range_size) / 50)), 0)
             else:
-                color = (255, 170 + int(((value - ((6. * range_size) / 50)) * 85.) / ((44. * range_size) / 50)), 0)
+                color = (255, 170 + int(((value - ((6. * range_size) /
+                                                   50)) * 85.) / ((44. * range_size) / 50)), 0)
 
             pixels.append(color)
 
@@ -217,8 +218,8 @@ if __name__ == '__main__':
     height = 600
     # The minimal number of iterations is used to remove the noise in
     # the picture.
-    min_iter = 3000
-    max_iter = 30000
+    min_iter = 100
+    max_iter = 1000
     # In order to speed up the computation, we use more slices than
     # the number of cpu. This allows the program to begin new
     # calculation if a slice takes a long time. The memory used by the
