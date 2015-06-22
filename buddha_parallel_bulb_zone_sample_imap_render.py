@@ -194,17 +194,19 @@ def render_picture(width, height, result):
     for y in xrange(height):
         for x in xrange(width):
             value = result[x][y] - minimum
-            if value < ((1. / 10) * range_size):
-                color = (int((value * 255.) / (range_size / 10.)), 0, 0)
+            if value < ((2. / 50) * range_size):
+                color = (int((value * 255.) / (2. * range_size /
+                                               50.)), 0, 0)
+            elif value < ((6. / 50) * range_size):
+                color = (255, int(((value - ((2. * range_size) / 50))
+                                 * 170.) / ((4. * range_size) / 50)), 0)
             else:
-                color = (255, int(((value - ((9. * range_size) / 10)) * 255.) / (19. * range_size)), 0)
+                color = (255, 170 + int(((value - ((6. * range_size) / 50)) * 85.) / ((44. * range_size) / 50)), 0)
 
             pixels.append(color)
 
     img = Image.new('RGB', (width, height))
     img.putdata(pixels)
-#    img.putdata([(((result[x][y] - minimum) * 255) / (maximum-minimum), 0, 0) \
-#                 for y in range(height) for x in range(width)])
     img.save('colors.bmp')
     print "Rendering done"
 
@@ -215,19 +217,19 @@ if __name__ == '__main__':
     height = 600
     # The minimal number of iterations is used to remove the noise in
     # the picture.
-    min_iter = 5000
-    max_iter = 50000
+    min_iter = 3000
+    max_iter = 30000
     # In order to speed up the computation, we use more slices than
     # the number of cpu. This allows the program to begin new
     # calculation if a slice takes a long time. The memory used by the
     # program is linear in this variable, be careful.
-    slice_per_cpu = 12
+    slice_per_cpu = 15
     # The number of complex number associated to each pixel of the
     # entry image on which the sequence will be iterated. Actually,
     # this is size of the square shape of complex number.
-    complex_number_by_pixel = 30
+    complex_number_by_pixel = 35
     # Percent of the pixel that will be used to generate the fractal.
-    random_sample_percent = 35
+    random_sample_percent = 50
 
     print "Start"
     print "Opening image file"
